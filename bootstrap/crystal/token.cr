@@ -1,7 +1,7 @@
 require "location"
 
 module Crystal
-  class Token
+  struct Token
     property :type
     property :value
     property :number_kind

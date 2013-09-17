@@ -1,5 +1,5 @@
 module Crystal
-  class Location
+  struct Location
     property :line_number
     property :column_number
     property :filename

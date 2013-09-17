@@ -596,6 +596,8 @@ module Crystal
           parse_class_def true
         when :class
           parse_class_def
+        when :struct
+          parse_struct_def
         when :module
           parse_module_def
         when :include
@@ -1533,6 +1535,14 @@ module Crystal
     end
 
     def parse_class_def(abstract = false)
+      parse_class_or_struct_def ClassDef, abstract
+    end
+
+    def parse_struct_def
+      parse_class_or_struct_def StructDef
+    end
+
+    def parse_class_or_struct_def(klass, abstract = false)
       location = @token.location
 
       next_token_skip_space_or_newline
@@ -1555,7 +1565,7 @@ module Crystal
       check_ident :end
       next_token_skip_space
 
-      class_def = ClassDef.new name, body, superclass, type_vars, abstract, name_column_number
+      class_def = klass.new name, body, superclass, type_vars, abstract, name_column_number
       class_def.location = location
       class_def
     end
@@ -1946,11 +1956,11 @@ module Crystal
             exp.location = location
             expressions << exp
           when :struct
-            exp = parse_struct_or_union StructDef
+            exp = parse_struct_or_union CStructDef
             exp.location = location
             expressions << exp
           when :union
-            exp = parse_struct_or_union UnionDef
+            exp = parse_struct_or_union CUnionDef
             exp.location = location
             expressions << exp
           when :enum

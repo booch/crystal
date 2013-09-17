@@ -48,7 +48,7 @@ class Regexp
 end
 
 class MatchData
-  EMPTY = MatchData.new("", "", 0, Pointer(Int32).malloc(0), 0)
+  EMPTY = MatchData.new("", "", 0, Pointer(Int32).null, 0)
 
   def initialize(@regex, @string, @pos, @ovector, @length)
   end

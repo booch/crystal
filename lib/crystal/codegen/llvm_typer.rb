@@ -22,7 +22,11 @@ module Crystal
                       pointed_type = LLVM::Int8 if pointed_type == LLVM.Void
                       LLVM::Pointer(pointed_type)
                     when InstanceVarContainer
-                      LLVM::Pointer(llvm_struct_type(type))
+                      if type.struct?
+                        llvm_struct_type(type)
+                      else
+                        LLVM::Pointer(llvm_struct_type(type))
+                      end
                     when UnionType
                       if type.nilable?
                         llvm_type(type.nilable_type)

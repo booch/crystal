@@ -53,6 +53,12 @@ module Crystal
       node
     end
 
+    def transform_struct_def(node)
+      node.body = node.body.transform(self)
+      node.superclass = node.superclass.transform(self) if node.superclass
+      node
+    end
+
     def transform_module_def(node)
       node.body = node.body.transform(self)
       node
@@ -283,7 +289,11 @@ module Crystal
       node
     end
 
-    def transform_struct_def(node)
+    def transform_c_struct_def(node)
+      node
+    end
+
+    def transform_c_union_def(node)
       node
     end
 

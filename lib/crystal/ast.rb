@@ -222,13 +222,7 @@ module Crystal
     end
   end
 
-  # Class definition:
-  #
-  #     'class' name [ '<' superclass ]
-  #       body
-  #     'end'
-  #
-  class ClassDef < ASTNode
+  class ClassOrStructDef < ASTNode
     attr_accessor :name
     attr_accessor :body
     attr_accessor :superclass
@@ -252,7 +246,7 @@ module Crystal
     end
 
     def ==(other)
-      other.is_a?(ClassDef) && other.name == name && other.body == body && other.superclass == superclass && other.type_vars == type_vars && abstract == other.abstract
+      other.is_a?(self.class) && other.name == name && other.body == body && other.superclass == superclass && other.type_vars == type_vars && abstract == other.abstract
     end
 
     def clone_from(other)
@@ -263,6 +257,24 @@ module Crystal
       @abstract = other.abstract
       @name_column_number = other.name_column_number
     end
+  end
+
+  # Class definition:
+  #
+  #     'class' name [ '<' superclass ]
+  #       body
+  #     'end'
+  #
+  class ClassDef < ClassOrStructDef
+  end
+
+  # Struct definition:
+  #
+  #     'struct' name [ '<' superclass ]
+  #       body
+  #     'end'
+  #
+  class StructDef < ClassOrStructDef
   end
 
   # Module definition:
@@ -1213,7 +1225,7 @@ module Crystal
     end
   end
 
-  class StructOrUnionDef < ASTNode
+  class CStructOrUnionDef < ASTNode
     attr_accessor :name
     attr_accessor :fields
 
@@ -1231,10 +1243,10 @@ module Crystal
     end
   end
 
-  class StructDef < StructOrUnionDef
+  class CStructDef < CStructOrUnionDef
   end
 
-  class UnionDef < StructOrUnionDef
+  class CUnionDef < CStructOrUnionDef
   end
 
   class EnumDef < ASTNode

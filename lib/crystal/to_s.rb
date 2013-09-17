@@ -509,8 +509,17 @@ module Crystal
     end
 
     def visit_class_def(node)
+      visit_class_or_struct_def node, "class"
+    end
+
+    def visit_struct_def(node)
+      visit_class_or_struct_def node, "struct"
+    end
+
+    def visit_class_or_struct_def(node, keyword)
       @str << "abstract " if node.abstract
-      @str << "class "
+      @str << keyword
+      @str << " "
       node.name.accept self
       if node.type_vars
         @str << "("

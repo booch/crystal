@@ -186,6 +186,48 @@ module Crystal
       false
     end
 
+    def visit_struct_def(node)
+      superclass = if node.superclass
+                 lookup_ident_type node.superclass
+               else
+                 mod.value
+               end
+
+      if node.name.names.length == 1 && !node.name.global
+        scope = current_type
+        name = node.name.names.first
+      else
+        name = node.name.names.pop
+        scope = lookup_ident_type node.name
+      end
+
+      type = scope.types[name]
+      if type
+        node.raise "#{name} is not a struct" unless type.struct?
+        if node.superclass && type.superclass != superclass
+          node.raise "superclass mismatch for struct #{type.name} (#{superclass.name} for #{type.superclass.name})"
+        end
+      else
+        neeeds_force_add_subclass = true
+        if node.type_vars
+          type = GenericClassType.new scope, name, superclass, node.type_vars, false
+        else
+          type = NonGenericClassType.new scope, name, superclass, false
+        end
+        type.abstract = node.abstract
+        type.struct = true
+        scope.types[name] = type
+      end
+
+      @types.push type
+      node.body.accept self
+      @types.pop
+
+      type.force_add_subclass if neeeds_force_add_subclass
+
+      false
+    end
+
     def visit_module_def(node)
       if node.name.names.length == 1 && !node.name.global
         scope = current_type
@@ -357,15 +399,15 @@ module Crystal
       end
     end
 
-    def end_visit_struct_def(node)
-      visit_struct_or_union_def node, CStructType
+    def end_visit_c_struct_def(node)
+      visit_c_struct_or_union_def node, CStructType
     end
 
-    def end_visit_union_def(node)
-      visit_struct_or_union_def node, CUnionType
+    def end_visit_c_union_def(node)
+      visit_c_struct_or_union_def node, CUnionType
     end
 
-    def visit_struct_or_union_def(node, klass)
+    def visit_c_struct_or_union_def(node, klass)
       type = current_type.types[node.name]
       if type
         node.raise "#{node.name} is already defined"

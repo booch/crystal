@@ -21,6 +21,10 @@ module Crystal
       false
     end
 
+    def struct?
+      false
+    end
+
     def c_struct?
       false
     end
@@ -31,6 +35,10 @@ module Crystal
 
     def c_enum?
       false
+    end
+
+    def value_like?
+      struct? || c_struct? || c_union?
     end
 
     def metaclass?
@@ -735,6 +743,7 @@ module Crystal
     attr_accessor :abstract
     attr_accessor :owned_instance_vars
     attr_accessor :instance_vars_in_initialize
+    attr_accessor :struct
 
     def initialize(container, name, superclass, add_subclass = true)
       super(container, name)
@@ -829,7 +838,11 @@ module Crystal
     end
 
     def class?
-      true
+      !@struct
+    end
+
+    def struct?
+      @struct
     end
   end
 
@@ -933,7 +946,11 @@ module Crystal
     end
 
     def class?
-      true
+      !@struct
+    end
+
+    def struct?
+      @struct
     end
 
     def metaclass
@@ -978,7 +995,11 @@ module Crystal
     end
 
     def class?
-      true
+      @generic_class.class?
+    end
+
+    def struct?
+      @generic_class.struct?
     end
 
     def generic?

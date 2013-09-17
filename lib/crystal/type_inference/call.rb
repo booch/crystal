@@ -88,7 +88,7 @@ module Crystal
       matches = owner.lookup_matches(def_name, arg_types, !!block)
 
       if matches.empty?
-        if def_name == 'new' && owner.metaclass? && (owner.instance_type.class? || owner.instance_type.hierarchy?) && !owner.instance_type.pointer?
+        if def_name == 'new' && owner.metaclass? && (owner.instance_type.class? || owner.instance_type.struct? || owner.instance_type.hierarchy?) && !owner.instance_type.pointer?
           new_matches = define_new owner, arg_types
           matches = new_matches unless new_matches.empty?
         else

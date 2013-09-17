@@ -36,7 +36,7 @@ module Crystal
     end
   end
 
-  class LLVMVar
+  struct LLVMVar
     property :pointer
     property :type
 
