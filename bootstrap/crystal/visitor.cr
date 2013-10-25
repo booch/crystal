@@ -1,5 +1,5 @@
 module Crystal
-  class Visitor
+  abstract class Visitor
     def visit_any(node)
     end
 

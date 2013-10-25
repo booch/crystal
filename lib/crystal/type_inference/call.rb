@@ -137,9 +137,7 @@ module Crystal
         unless typed_def
           # puts "#{owner}##{name}(#{arg_types.join ', '})#{block_type ? "{ #{block_type} }" : ""}"
           typed_def, typed_def_args = prepare_typed_def_with_args(match.def, match.owner, lookup_self_type, match.arg_types)
-          typed_def.args.zip(self.args) do |typed_def_arg, call_arg|
-            typed_def_arg.bind_to(call_arg)
-          end
+          bind_args_to_call_args(typed_def, match)
 
           match.owner.add_def_instance(match.def.object_id, lookup_arg_types, block_type, typed_def) if use_cache
           if typed_def.body
@@ -149,14 +147,16 @@ module Crystal
             end
           end
         else
-          bubbling_exception do
-            typed_def.args.zip(self.args) do |typed_def_arg, call_arg|
-              typed_def_arg.bind_to(call_arg)
-            end
-          end
+          bubbling_exception { bind_args_to_call_args(typed_def, match) }
         end
 
         typed_def
+      end
+    end
+
+    def bind_args_to_call_args(typed_def, match)
+      typed_def.args.zip(match.arg_types) do |typed_def_arg, match_arg_type|
+        typed_def_arg.type = @mod.type_merge(*typed_def_arg.type, match_arg_type)
       end
     end
 
