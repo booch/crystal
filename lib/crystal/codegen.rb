@@ -1328,6 +1328,21 @@ module Crystal
         end
       end
 
+      i = 0
+      if self_type && self_type.passed_as_self?
+        i += 1
+      end
+      target_def.args.zip(node.args) do |target_def_arg, node_arg|
+        if target_def_arg.type != node_arg.type
+          if target_def_arg.type.union?
+            union = alloca llvm_type(target_def_arg.type)
+            assign_to_union(union, target_def_arg.type, node_arg.type, call_args[i])
+            call_args[i] = union
+          end
+        end
+        i += 1
+      end
+
       codegen_call_or_invoke(fun, call_args, target_def.raises)
 
       if has_struct_or_union_out_args

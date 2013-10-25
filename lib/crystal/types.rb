@@ -101,6 +101,10 @@ module Crystal
       false
     end
 
+    def combinable?
+      false
+    end
+
     def instance_type
       self
     end
@@ -482,7 +486,13 @@ module Crystal
 
     def def_instance_key(def_object_id, arg_types, block_type)
       key = [def_object_id]
-      key.concat arg_types.map(&:type_id)
+      arg_types.each do |type|
+        if type.combinable?
+          key << nil
+        else
+          key << type.type_id
+        end
+      end
       key.push block_type.type_id if block_type
       key
     end
@@ -752,6 +762,10 @@ module Crystal
       @owned_instance_vars = Set.new
 
       force_add_subclass if add_subclass
+    end
+
+    def combinable?
+      !value?
     end
 
     def force_add_subclass

@@ -137,11 +137,21 @@ module Crystal
         unless typed_def
           # puts "#{owner}##{name}(#{arg_types.join ', '})#{block_type ? "{ #{block_type} }" : ""}"
           typed_def, typed_def_args = prepare_typed_def_with_args(match.def, match.owner, lookup_self_type, match.arg_types)
+          typed_def.args.zip(self.args) do |typed_def_arg, call_arg|
+            typed_def_arg.bind_to(call_arg)
+          end
+
           match.owner.add_def_instance(match.def.object_id, lookup_arg_types, block_type, typed_def) if use_cache
           if typed_def.body
             bubbling_exception do
               visitor = TypeVisitor.new(@mod, typed_def_args, lookup_self_type, parent_visitor, self, owner, match.def, typed_def, match.arg_types, match.free_vars, yield_vars)
               typed_def.body.accept visitor
+            end
+          end
+        else
+          bubbling_exception do
+            typed_def.args.zip(self.args) do |typed_def_arg, call_arg|
+              typed_def_arg.bind_to(call_arg)
             end
           end
         end
@@ -557,11 +567,10 @@ module Crystal
       0.upto(self.args.length - 1) do |index|
         arg = typed_def.args[index]
         type = arg_types[args_start_index + index]
-        var = Var.new(arg.name, type)
+        var = Var.new(arg.name)
         var.location = arg.location
-        var.bind_to(var)
+        var.bind_to(arg)
         args[arg.name] = var
-        arg.type = type
       end
 
       [typed_def, args]
